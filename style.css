@@ -1,0 +1,158 @@
+/* ========= GENERAL STYLES ========= */
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  padding: 20px;
+  background: #f4f4f4;
+  color: #222;
+  transition: background 0.3s, color 0.3s;
+}
+
+body.dark {
+  background: #121212;
+  color: #e0e0e0;
+}
+
+h1, h3 {
+  margin-top: 30px;
+}
+
+/* ========= TABLE STYLING ========= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+  transition: background 0.3s;
+}
+
+th {
+  background-color: #007bff;
+  color: white;
+}
+
+body.dark th {
+  background-color: #0056b3;
+}
+
+/* ========= FORM INPUTS ========= */
+input, select, button {
+  padding: 8px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+input[type="number"] {
+  width: 80px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+body.dark input,
+body.dark select,
+body.dark button {
+  background-color: #1e1e1e;
+  color: white;
+  border: 1px solid #444;
+}
+
+/* ========= THEME DROPDOWN ========= */
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Default Theme */
+body.default {
+  background: #f4f4f4;
+  color: #000;
+}
+
+/* Dark Theme */
+body.dark {
+  background: #121212;
+  color: #fff;
+}
+
+/* Light Theme */
+body.light {
+  background: #ffffff;
+  color: #000;
+}
+
+/* Custom Color */
+body.custom-theme {
+  color: #000;
+}
+
+
+/* ========= EMERGENCY BANNER ========= */
+#emergencyBanner {
+  display: none;
+  background: red;
+  color: white;
+  padding: 15px;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 20px;
+  animation: blink 1s infinite;
+  border-radius: 6px;
+}
+
+@keyframes blink {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* ========= MAP ========= */
+#map {
+  height: 300px;
+  margin-top: 20px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+}
+
+/* ========= AI REPORT ========= */
+#aiReport {
+  padding: 15px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 10px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
+body.dark #aiReport {
+  background: #1e1e1e;
+  border-color: #555;
+  color: #eee;
+}
+
+/* ========= RESPONSIVE ========= */
+@media (max-width: 768px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  th, td {
+    text-align: right;
+    position: relative;
+    padding-left: 50%;
+  }
+}
