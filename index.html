@@ -1,249 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Smart City Dashboard</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root { --bg: #ffffff; --text: #000000; }
-    body.dark { --bg: #121212; --text: #e0e0e0; }
-    body {
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0; padding: 0;
-      transition: background .3s, color .3s;
-    }
-    header {
-      background: #2c3e50; color: white;
-      padding: 10px;
-      display: flex; justify-content: space-between; align-items: center;
-      position: relative;
-    }
-    header select, button {
-      margin-left: 10px; padding: 5px 10px;
-    }
-    .datetime {
-      position: absolute;
-      bottom: -20px;
-      right: 10px;
-      font-size: 0.9em;
-      color: #ccc;
-    }
-    main { padding: 20px; }
-    .cards { display: flex; gap: 10px; margin-bottom: 10px; }
-    .card { flex: 1; padding: 10px; border-radius: 4px; color: white; font-weight: bold; }
-    .card.low { background: #2ecc71; }
-    .card.medium { background: #f1c40f; }
-    .card.high { background: #e74c3c; }
-    .map { width: 100%; height: 300px; }
+    <head>
+        <meta charset="UTF-8" />
+        <title>Smart City Dashboard</title>
+        <link rel="stylesheet" href="./style.css" />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="./script.js"></script>
+    </head>
+    <body>
+        <header>
+            <h1>🌆 Smart City Dashboard</h1>
+            <div>
+                <select id="citySelector">
+                    <option value="Delhi">Delhi</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Chennai">Chennai</option>
+                </select>
+                <button onclick="exportToCSV()">⬇ Export CSV</button>
+                <button onclick="document.location='./about.html'">
+                    About
+                </button>
+                <select id="themeSwitcher" onchange="changeTheme(this.value)">
+                    <option value="light">🌞 Light</option>
+                    <option value="dark">🌙 Dark</option>
+                </select>
+            </div>
+            <div id="datetime" class="datetime"></div>
+        </header>
 
-    .intro {
-      background: linear-gradient(to right, #3498db, #2c3e50);
-      color: white;
-      text-align: center;
-      padding: 40px 20px;
-      border-bottom: 4px solid #00c3ff;
-    }
-    .intro img {
-      width: 100px;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      margin-bottom: 15px;
-    }
-    .intro h2 {
-      margin: 10px 0 5px;
-      font-size: 2rem;
-    }
-    .intro p {
-      font-size: 1rem;
-      color: #ecf0f1;
-    }
-    body.dark .intro {
-      background: #1e1e2f;
-      border-color: #00c3ff;
-    }
-  </style>
-  <script defer>
-    
-    let map;
-    window.onload = () => {
-      const t = localStorage.getItem('theme') || 'light';
-      applyTheme(t);
-      document.getElementById('themeSwitcher').value = t;
-      renderAQIChart();
-      startTupleAnimation();
-      startLiveTraffic();
-      renderTrafficGraph();
-      initMap();
-      simulateAIAnalysis();
-      updateClock();
-      setInterval(updateClock, 1000);
-    };
+        <div class="intro">
+            <img
+                src="https://images.squarespace-cdn.com/content/v1/57fba8555016e14424f71c08/1525902486228-0QAREFKQ4PS7KNNEF0A0/cropped-smart-city-podcast-artwork-transparent.png"
+                alt="Smart City Logo"
+            />
 
-    function changeTheme(v) { applyTheme(v); localStorage.setItem('theme', v); }
-    function applyTheme(m) { document.body.classList.toggle('dark', m === 'dark'); }
+            <h2>Welcome to Smart City Dashboard</h2>
+            <p>
+                Real-time insights into traffic, air quality, and more – all
+                powered by smart tech.
+            </p>
+        </div>
 
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('datetime').textContent = now.toLocaleString();
-    }
-
-    function startTupleAnimation() {
-      const c = document.getElementById('tupleData');
-      setInterval(() => {
-        const txt = `🚦 Vehicle ${(Math.random()*1000).toFixed(2)}, AQI ${Math.floor(Math.random()*300)}`;
-        const d = document.createElement('div');
-        d.textContent = txt;
-        c.prepend(d);
-        if (c.children.length > 10) c.removeChild(c.lastChild);
-      }, 1000);
-    }
-
-    function renderAQIChart() {
-      const ctx = document.getElementById('aqiChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['6 AM', '9 AM', '12 PM', '3 PM', '6 PM'],
-          datasets: [{
-            label: 'AQI Levels',
-            data: [120, 200, 160, 180, 140],
-            borderColor: 'red',
-            tension: 0.4,
-            fill: false
-          }]
-        },
-        options: { scales: { y: { beginAtZero: true } } }
-      });
-    }
-
-    let trafficHistory = [];
-    function startLiveTraffic() {
-      const roads = ['Ring Road', 'MG Road', 'Outer Circle', 'NH-24', 'Airport Expressway'];
-      setInterval(() => {
-        const cards = document.getElementById('trafficCards');
-        cards.innerHTML = '';
-        const levels = ['low', 'medium', 'high'];
-        const values = [];
-        roads.forEach(r => {
-          const lvl = levels[Math.floor(Math.random()*3)];
-          const emoji = lvl === 'low' ? '🟢' : lvl === 'medium' ? '🟡' : '🔴';
-          values.push(['low', 'medium', 'high'].indexOf(lvl));
-          const card = document.createElement('div');
-          card.className = `card ${lvl}`;
-          card.innerHTML = `🛣️ <strong>${r}</strong><br>${emoji.toUpperCase()} ${lvl}`;
-          cards.append(card);
-        });
-        trafficHistory.push(values.reduce((a, b) => a + b) / values.length);
-        if (trafficHistory.length > 10) trafficHistory.shift();
-        updateTrafficGraph();
-      }, 3000);
-    }
-
-    let trafficChart;
-    function renderTrafficGraph() {
-      const ctx = document.getElementById('trafficGraph').getContext('2d');
-      trafficChart = new Chart(ctx, {
-        type: 'line',
-        data: { labels: [], datasets: [{
-          label: 'Avg Congestion',
-          data: [],
-          borderColor: 'blue',
-          fill: false
-        }] },
-        options: {
-          scales: {
-            y: {
-              min: 0,
-              max: 2,
-              ticks: { stepSize: 1, callback: v => ['Low', 'Med', 'High'][v] }
-            }
-          }
-        }
-      });
-    }
-
-    function updateTrafficGraph() {
-      const c = trafficChart;
-      const l = trafficHistory.length;
-      c.data.labels = Array.from({length: l}, (_, i) => `${i * 3}s`);
-      c.data.datasets[0].data = trafficHistory;
-      c.update();
-    }
-
-    function initMap() {
-      const iframe = document.createElement('iframe');
-      iframe.src = 'https://maps.google.com/maps?q=Delhi&t=&z=13&ie=UTF8&iwloc=&output=embed';
-      iframe.width = '100%';
-      iframe.height = '300';
-      iframe.style.border = '0';
-      document.getElementById('map').innerHTML = '';
-      document.getElementById('map').appendChild(iframe);
-    }
-
-    function exportToCSV() {
-      const arr = Array.from(document.querySelectorAll('#tupleData div')).map(d => d.textContent);
-      const blob = new Blob([arr.join('\n')], { type: 'text/csv' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'data.csv';
-      a.click();
-    }
-
-    function simulateAIAnalysis() {
-      console.log("[AI Pattern] Tuple trend detected: peak traffic correlates with AQI > 180");
-    }
-  </script>
-</head>
-<body>
-  <header>
-    <h1>🌆 Smart City Dashboard</h1>
-    <div>
-      <select id="citySelector">
-        <option value="Delhi">Delhi</option>
-        <option value="Mumbai">Mumbai</option>
-        <option value="Chennai">Chennai</option>
-      </select>
-      <button onclick="exportToCSV()">⬇ Export CSV</button>
-      <button on
-      click="location.href='admin.html'">🔒 Admin Panel</button>
-      <select id="themeSwitcher" onchange="changeTheme(this.value)">
-        <option value="light">🌞 Light</option>
-        <option value="dark">🌙 Dark</option>
-      </select>
-    </div>
-    <div id="datetime" class="datetime"></div>
-  </header>
-
-  <div class="intro">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Smart_City_Logo.png/600px-Smart_City_Logo.png" alt="Smart City Logo">
-
-
-    <h2>Welcome to Smart City Dashboard</h2>
-    <p>Real-time insights into traffic, air quality, and more – all powered by smart tech.</p>
-  </div>
-
-  <main>
-    <section id="tupleData"></section>
-    <section>
-      <canvas id="aqiChart" width="400" height="150"></canvas>
-    </section>
-    <section>
-      <h3>🚗 Live Traffic Status</h3>
-      <div id="trafficCards" class="cards"></div>
-      <canvas id="trafficGraph" width="400" height="150"></canvas>
-    </section>
-    <section>
-      <h3>📍 Traffic Map</h3>
-      <div id="map" class="map"></div>
-    </section>
-    <section>
-      <h3>🚨 Emergency Alerts</h3>
-      <div id="alerts">No alerts at the moment.</div>
-    </section>
-  </main>
-</body>
+        <main>
+            <section id="tupleData"></section>
+            <section>
+                <canvas id="aqiChart" width="400" height="150"></canvas>
+            </section>
+            <section>
+                <h3>🚗 Live Traffic Status</h3>
+                <div id="trafficCards" class="cards"></div>
+                <canvas id="trafficGraph" width="400" height="150"></canvas>
+            </section>
+            <section>
+                <h3>📍 Traffic Map</h3>
+                <div id="map" class="map"></div>
+            </section>
+            <section>
+                <h3>🚨 Emergency Alerts</h3>
+                <div id="alerts">
+                    <strong>Health Alert</strong>: ✅ Air Quality is safe for
+                    outdoor activities.
+                </div>
+            </section>
+            <footer style="text-align: center">
+                <p>&copy; 2025 Smartcity Dashboard Static Demo Built with ❤️</p>
+            </footer>
+        </main>
+    </body>
 </html>

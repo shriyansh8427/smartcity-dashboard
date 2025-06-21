@@ -1,209 +1,154 @@
-let tuples = [];
+let map;
+window.onload = () => {
+  const t = localStorage.getItem("theme") || "light";
+  applyTheme(t);
+  document.getElementById("themeSwitcher").value = t;
+  renderAQIChart();
+  startTupleAnimation();
+  startLiveTraffic();
+  renderTrafficGraph();
+  initMap();
+  simulateAIAnalysis();
+  updateClock();
+  setInterval(updateClock, 1000);
+};
 
-// Add a new tuple to the dashboard
-function addTuple() {
-  const location = document.getElementById("location").value;
-  const AQI = parseInt(document.getElementById("aqi").value);
-  const traffic = document.getElementById("traffic").value;
-
-  if (!location || isNaN(AQI) || !traffic) return;
-
-  const tuple = { location, AQI, traffic };
-  tuples.push(tuple);
-
-  updateTable();
-  updateChart();
-  updateMap();
-  updateAI();
+function changeTheme(v) {
+  applyTheme(v);
+  localStorage.setItem("theme", v);
+}
+function applyTheme(m) {
+  document.body.classList.toggle("dark", m === "dark");
 }
 
-// Delete a tuple by index
-function deleteTuple(index) {
-  tuples.splice(index, 1);
-  updateTable();
-  updateChart();
-  updateMap();
-  updateAI();
+function updateClock() {
+  const now = new Date();
+  document.getElementById("datetime").textContent = now.toLocaleString();
 }
 
-// Update the table UI
-function updateTable() {
-  const body = document.getElementById("tupleBody");
-  body.innerHTML = "";
-  tuples.forEach((t, i) => {
-    const row = `<tr>
-      <td>${t.location}</td>
-      <td>${t.AQI}</td>
-      <td>${t.traffic}</td>
-      <td><button onclick="deleteTuple(${i})">🗑️</button></td>
-    </tr>`;
-    body.innerHTML += row;
-  });
-  filterTable();
-  updateAI();
+function startTupleAnimation() {
+  const c = document.getElementById("tupleData");
+  setInterval(() => {
+    const txt = `🚦 Vehicle ${(Math.random() * 1000).toFixed(2)}, AQI ${Math.floor(Math.random() * 300)}`;
+    const d = document.createElement("div");
+    d.textContent = txt;
+    c.prepend(d);
+    if (c.children.length > 10) c.removeChild(c.lastChild);
+  }, 1000);
 }
 
-// Upload tuples via CSV
-function uploadCSV(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const lines = e.target.result.split("\n");
-    lines.forEach(line => {
-      const [location, AQI, traffic] = line.split(",");
-      if (location && AQI && traffic) {
-        tuples.push({ location, AQI: parseInt(AQI), traffic: traffic.trim() });
-      }
-    });
-    updateTable();
-    updateChart();
-    updateMap();
-    updateAI();
-  };
-  reader.readAsText(file);
-}
-
-// Search/filter by location name
-function filterTable() {
-  const search = document.getElementById("search").value.toLowerCase();
-  const range = document.getElementById("aqiRange").value;
-  const rows = document.querySelectorAll("#tupleBody tr");
-
-  rows.forEach(row => {
-    const loc = row.cells[0].innerText.toLowerCase();
-    const aqi = parseInt(row.cells[1].innerText);
-    const inSearch = loc.includes(search);
-    const inRange = (range === "all") || (range === "good" && aqi <= 100) ||
-                    (range === "moderate" && aqi > 100 && aqi <= 200) ||
-                    (range === "poor" && aqi > 200);
-    row.style.display = (inSearch && inRange) ? "" : "none";
-  });
-}
-
-// Live AQI trend chart
-let chart;
-function updateChart() {
+function renderAQIChart() {
   const ctx = document.getElementById("aqiChart").getContext("2d");
-  const labels = tuples.map(t => t.location);
-  const data = tuples.map(t => t.AQI);
-
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: "bar",
+  new Chart(ctx, {
+    type: "line",
     data: {
-      labels: labels,
-      datasets: [{
-        label: "AQI",
-        data: data,
-        backgroundColor: data.map(aqi =>
-          aqi > 300 ? "red" : aqi > 200 ? "orange" : aqi > 100 ? "yellow" : "green"
-        )
-      }]
-    }
+      labels: ["6 AM", "9 AM", "12 PM", "3 PM", "6 PM"],
+      datasets: [
+        {
+          label: "AQI Levels",
+          data: [120, 200, 160, 180, 140],
+          borderColor: "red",
+          tension: 0.4,
+          fill: false,
+        },
+      ],
+    },
+    options: { scales: { y: { beginAtZero: true } } },
   });
 }
 
-// AI analysis function
-function smartAIAnalysis() {
-  let pollute = tuples.filter(t => t.AQI > 300).length;
-  let jammed = tuples.filter(t => t.traffic === "Severe").length;
-  let result = [];
-
-  const isEmergency = (pollute >= 3 && jammed >= 3);
-
-  if (isEmergency) {
-    result.push("🚨 Emergency Mode Activated: Critical Levels!");
-    document.getElementById("emergencyBanner").style.display = "block";
-    highlightEmergencyRows();
-
-    // Play beep sound
-    new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=").play().catch(err => {
-      console.log("Sound blocked by browser:", err);
+let trafficHistory = [];
+function startLiveTraffic() {
+  const roads = [
+    "Ring Road",
+    "MG Road",
+    "Outer Circle",
+    "NH-24",
+    "Airport Expressway",
+  ];
+  setInterval(() => {
+    const cards = document.getElementById("trafficCards");
+    cards.innerHTML = "";
+    const levels = ["low", "medium", "high"];
+    const values = [];
+    roads.forEach((r) => {
+      const lvl = levels[Math.floor(Math.random() * 3)];
+      const emoji = lvl === "low" ? "🟢" : lvl === "medium" ? "🟡" : "🔴";
+      values.push(["low", "medium", "high"].indexOf(lvl));
+      const card = document.createElement("div");
+      card.className = `card ${lvl}`;
+      card.innerHTML = `🛣️ <strong>${r}</strong><br>${emoji.toUpperCase()} ${lvl}`;
+      cards.append(card);
     });
-  } else {
-    if (pollute >= 3) result.push("🔴 Pollution Spike Detected in Multiple Zones");
-    if (jammed >= 3) result.push("🟠 Traffic Congestion in Multiple Areas");
-    if (result.length === 0) result.push("🟢 All Zones Operating Normally");
-
-    document.getElementById("emergencyBanner").style.display = "none";
-    removeRowHighlights();
-  }
-
-  return result.join("<br>");
+    trafficHistory.push(values.reduce((a, b) => a + b) / values.length);
+    if (trafficHistory.length > 10) trafficHistory.shift();
+    updateTrafficGraph();
+  }, 3000);
 }
 
-function updateAI() {
-  document.getElementById("aiReport").innerHTML = smartAIAnalysis();
-}
-
-function highlightEmergencyRows() {
-  const rows = document.querySelectorAll("#tupleBody tr");
-  rows.forEach(row => {
-    const AQI = parseInt(row.cells[1].innerText);
-    const traffic = row.cells[2].innerText;
-    if (AQI > 300 && traffic === "Severe") {
-      row.style.background = "#ffcccc";
-      row.style.fontWeight = "bold";
-    }
+let trafficChart;
+function renderTrafficGraph() {
+  const ctx = document.getElementById("trafficGraph").getContext("2d");
+  trafficChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "Avg Congestion",
+          data: [],
+          borderColor: "blue",
+          fill: false,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          min: 0,
+          max: 2,
+          ticks: {
+            stepSize: 1,
+            callback: (v) => ["Low", "Med", "High"][v],
+          },
+        },
+      },
+    },
   });
 }
 
-function removeRowHighlights() {
-  const rows = document.querySelectorAll("#tupleBody tr");
-  rows.forEach(row => {
-    row.style.background = "";
-    row.style.fontWeight = "";
-  });
+function updateTrafficGraph() {
+  const c = trafficChart;
+  const l = trafficHistory.length;
+  c.data.labels = Array.from({ length: l }, (_, i) => `${i * 3}s`);
+  c.data.datasets[0].data = trafficHistory;
+  c.update();
 }
-
-// Theme switching
-// 🌗 Theme Switcher Logic
-const themeSelect = document.getElementById("themeSelect");
-const colorPicker = document.getElementById("customColorPicker");
-
-themeSelect.addEventListener("change", () => {
-  document.body.className = ""; // reset
-  document.body.style.backgroundColor = ""; // reset
-
-  const selected = themeSelect.value;
-  if (selected === "default") {
-    document.body.classList.add("default");
-  } else if (selected === "dark") {
-    document.body.classList.add("dark");
-  } else if (selected === "light") {
-    document.body.classList.add("light");
-  }
-});
-
-colorPicker.addEventListener("input", () => {
-  document.body.className = "custom-theme";
-  document.body.style.backgroundColor = colorPicker.value;
-});
-;
-
-
-
-// Dynamic map update
-let map, markers = [];
 
 function initMap() {
-  map = L.map('map').setView([28.61, 77.23], 5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
+  const iframe = document.createElement("iframe");
+  iframe.src =
+    "https://maps.google.com/maps?q=Delhi&t=&z=13&ie=UTF8&iwloc=&output=embed";
+  iframe.width = "100%";
+  iframe.height = "300";
+  iframe.style.border = "0";
+  document.getElementById("map").innerHTML = "";
+  document.getElementById("map").appendChild(iframe);
 }
 
-function updateMap() {
-  markers.forEach(m => map.removeLayer(m));
-  markers = [];
+function exportToCSV() {
+  const arr = Array.from(document.querySelectorAll("#tupleData div")).map(
+    (d) => d.textContent,
+  );
+  const blob = new Blob([arr.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "data.csv";
+  a.click();
+}
 
-  tuples.forEach(t => {
-    const lat = 20 + Math.random() * 10;
-    const lng = 70 + Math.random() * 10;
-    const marker = L.marker([lat, lng])
-      .bindPopup(`${t.location}<br>AQI: ${t.AQI}<br>Traffic: ${t.traffic}`)
-      .addTo(map);
-    markers.push(marker);
-  });
+function simulateAIAnalysis() {
+  console.log(
+    "[AI Pattern] Tuple trend detected: peak traffic correlates with AQI > 180",
+  );
 }
